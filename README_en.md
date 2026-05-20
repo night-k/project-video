@@ -1,158 +1,131 @@
-# AB Video Deduplicator: Unique High-Frame-Rate Blending for Deduplication
+# AB Video Deduplicator: High-FPS Frame Blending + Perturbation
 
 [简体中文](./README.md) | [English](./README_en.md)
 
-[![GitHub stars](https://img.shields.io/github/stars/toki-plus/AB-Video-Deduplicator?style=social)](https://github.com/toki-plus/AB-Video-Deduplicator/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/toki-plus/AB-Video-Deduplicator?style=social)](https://github.com/toki-plus/AB-Video-Deduplicator/network/members)
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/toki-plus/AB-Video-Deduplicator/pulls)
 
-> ### ⚠️ Important Disclaimer
-> This open-source version is an early release intended for technical research and educational purposes only. Do not use it for any illegal activities. Due to platform algorithm updates, its deduplication effectiveness may not meet current standards.
+> ⚠️ For technical research and educational purposes only. Do not use for any illegal activities.
 
-**AB Video Deduplicator is an open-source desktop application for video creators, designed to fundamentally alter a video's data fingerprint using an innovative "high-frame-rate frame sampling and blending" technique. It aims to bypass originality checks and deduplication mechanisms on major short-video platforms like TikTok.**
+**AB Video Deduplicator** is an open-source desktop app for video creators. It uses a multi-layer strategy of "high-FPS frame blending + frame perturbation + audio perturbation + TikTok-only encoding" to fundamentally alter video data fingerprints, bypassing originality detection on short-video platforms.
 
 <p align="center">
-  <a href="https://www.bilibili.com/video/BV1HwgrzbEow" target="_blank">
-    <img src="./assets/cover_demo.png" alt="Click to watch the demo video on Bilibili" width="800"/>
-  </a>
+  <img src="./assets/cover_software.png" alt="Main UI" width="600"/>
   <br>
-  <em>(Click the cover to watch the HD demo video on Bilibili)</em>
+  <em>Clean and intuitive user interface</em>
 </p>
 
 ---
 
 ## 💡 How It Works
 
-Traditional deduplication methods (filters, scaling, mirroring) are becoming less effective. This tool employs a more fundamental "frame blending" strategy:
+### 1. High-FPS Frame Blending
 
-1.  **Input Two Videos**:
-    *   **Video A (Content Video)**: The main video you want to publish.
-    *   **Video B (Material Video)**: An original, unrelated video.
-
-2.  **Generate High-Frame-Rate Stream**: The tool creates a high-frame-rate (e.g., 60/120/240 fps) video stream.
-
-3.  **Intelligent Frame Insertion**: Using a specific algorithm, frames from **Video A** are inserted into key positions of the new stream, while frames from **Video B** are used to fill the gaps between them.
-
-4.  **Final Result**: Due to platform compression, viewers on mobile devices still see a smooth playback of **Video A**. However, at the data level, the newly generated video contains a substantial number of frames from **Video B**, making its MD5 hash and data fingerprint completely different from the original, thus achieving deep deduplication.
-
-| Deduplication Level | Target FPS | Approx. A:B Frame Ratio |
-| :--- | :---: | :---: |
+| Dedup Level | Target FPS | A:B Frame Ratio |
+| :---: | :---: | :---: |
 | **50%** | 60 | 1 : 1 |
 | **75%** | 120 | 1 : 3 |
 | **87.5%**| 240 | 1 : 7 |
 
-## ✨ Core Features
+1. **Input two videos**: Video A (content) + Video B (material)
+2. **Generate high-FPS stream** (60/120/240 fps)
+3. **A frames at key positions**, B frames fill the gaps
+4. **Result**: Mobile viewers still see smooth A playback, but the data fingerprint is completely different
 
--   **Intuitive GUI**: Built with PyQt5 for simple, command-line-free operation.
--   **Three Deduplication Levels**: Offers 50% (60fps), 75% (120fps), and 87.5% (240fps) modes.
--   **🚀 NVIDIA GPU Acceleration**: Supports NVENC hardware encoding for significantly faster processing.
--   **Auto Resolution Matching**: Automatically resizes Video B to match Video A's resolution.
--   **Audio Preservation**: The original audio track from Video A is fully retained.
--   **Real-time Progress & Logging**: Clearly displays processing progress and detailed logs.
--   **Cross-Platform**: Runs on Windows, macOS, and Linux (with correct dependencies installed).
+### 2. Frame Perturbation
 
-## 📸 Screenshots
+Subtle, invisible modifications to each A frame:
+- Micro noise (2% intensity)
+- Random color temperature shift
+- 1.01x micro-scale + micro-translate
+- A/B frame blending (default 80% A)
 
-<p align="center">
-  <img src="./assets/cover_software.png" alt="Main UI" width="800"/>
-  <br>
-  <em>The clean and intuitive user interface.</em>
-</p>
+Even if the platform reconstructs via frame-dropping, it can't recover the original A frame.
 
-## 🚀 Quick Start
+### 3. Audio Perturbation
 
-### System Requirements
+Micro speed adjustment on the audio track (default 0.99x), changing the audio fingerprint.
 
-1.  **Python**: Version 3.8 or newer.
-2.  **FFmpeg**: **Must** be installed and its executable path added to the system's PATH environment variable.
-    -   Windows: Download from [gyan.dev](https://www.gyan.dev/ffmpeg/builds/).
-    -   macOS: `brew install ffmpeg`
-    -   Linux: `sudo apt update && sudo apt install ffmpeg`
+### 4. TikTok Mobile-Only Mode (optional)
 
-### Installation & Launch
+Output video plays normally only on TikTok mobile app. PC players show color distortion / grayscale + no audio.
 
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/toki-plus/AB-Video-Deduplicator.git
-    cd AB-Video-Deduplicator
-    ```
+### 5. Playback Guard (optional, experimental)
 
-2.  **Create and activate a virtual environment (recommended):**
-    ```bash
-    python -m venv venv
-    # On Windows
-    venv\Scripts\activate
-    # On macOS/Linux
-    source venv/bin/activate
-    ```
-
-3.  **Install dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
-4.  **Generate Qt Resource File:**
-    The application's icon resources need to be compiled manually. Run the following command:
-    ```bash
-    pyrcc5 src/resources.qrc -o src/resources.py
-    ```
-5.  **Run the application:**
-    ```bash
-    python src/main.py
-    ```
-
-## 📖 Usage Guide
-
-1.  Click "Select Video A" to choose your **content video**.
-2.  Click "Select Video B" to choose your **material video**.
-3.  Select a mode from the "Deduplication Level" dropdown (start with 60fps for testing).
-4.  Check "Enable GPU Acceleration" if you have a supported NVIDIA GPU.
-5.  Click "Start Processing" and wait for the progress bar to complete.
-6.  The processed video will be saved in the `output` folder.
+Re-encodes with HEVC hardware-decode-friendly settings + guard metadata, improving hardware decode probability on real devices while discouraging simulator/software decoding.
 
 ---
 
-<p align="center">
-  <strong>For technical inquiries, please connect via:</strong>
-</p>
-<table align="center">
-  <tr>
-    <td align="center">
-      <img src="./assets/wechat.png" alt="WeChat QR Code" width="200"/>
-      <br />
-      <sub><b>WeChat</b></sub>
-      <br />
-      <sub>ID: toki-plus (Note: "GitHub Customization")</sub>
-    </td>
-    <td align="center">
-      <img src="./assets/gzh.png" alt="Public Account QR Code" width="200"/>
-      <br />
-      <sub><b>Public Account</b></sub>
-      <br />
-      <sub>Scan for tech articles & project updates</sub>
-    </td>
-  </tr>
-</table>
+## ✨ Core Features
 
-## 📂 My Other Open-Source Projects
+- **Intuitive GUI** — PyQt5, no command-line needed
+- **Three dedup levels** — 60 / 120 / 240 fps
+- **Frame perturbation** — noise + color shift + micro-transform + A/B blend
+- **Audio perturbation** — micro speed change
+- **TikTok-only mode** — mobile-only playback
+- **Playback guard** — HEVC hardware decode optimization (experimental)
+- **NVIDIA GPU acceleration** — NVENC hardware encoding
+- **Auto resolution matching** — Video B auto-resized to match Video A
+- **Real-time progress & logging**
 
--   **[Netease Downloader](https://github.com/toki-plus/netease-downloader)**: An elegant, feature-rich desktop application for downloading high-quality and lossless music from Netease Cloud Music, with support for playlists, albums, QR login, and automatic metadata tagging.
--   **[AI-Trader-For-MT4](https://github.com/toki-plus/ai-trader-for-mt4)**: A revolutionary open-source framework that transforms a Large Language Model (LLM) into an autonomous trading agent for the MetaTrader 4 (MT4) platform.
--   **[Auto USPS Tracker](https://github.com/toki-plus/auto-usps-tracker)**: An efficient USPS bulk package tracker for e-commerce sellers, featuring anti-blocking scraping and formatted Excel report generation.
--   **[AI Mixed Cut](https://github.com/toki-plus/ai-mixed-cut)**: A groundbreaking AI content re-creation engine that deconstructs viral videos into a creative library and automatically generates new, original videos using a "Deconstruct-Reconstruct" model.
--   **[AI Video Workflow](https://github.com/toki-plus/ai-video-workflow)**: A fully automated AI-native video generation pipeline, integrating Text-to-Image, Image-to-Video, and Text-to-Music models to create AIGC short videos with one click.
--   **[AI Highlight Clip](https://github.com/toki-plus/ai-highlight-clip)**: An AI-driven tool that automatically discovers, analyzes, and clips "highlight moments" from long-form videos, complete with auto-generated viral titles.
--   **[AI TTV Workflow](https://github.com/toki-plus/ai-ttv-workflow)**: An AI-driven text-to-video tool that automatically converts any script into a short video with voiceover, subtitles, and a cover. Supports AI script extraction, rewriting, and translation.
--   **[Video Mover](https://github.com/toki-plus/video-mover)**: A powerful, fully automated pipeline that monitors creators, downloads their new videos, performs deep deduplication, generates AI-powered titles, and auto-publishes to different platforms.
+---
 
-## 🤝 Contributing
+## 🚀 Quick Start
 
-Contributions of any kind are welcome! If you have ideas for new features, have found a bug, or have suggestions for improvements, please:
--   Open an [Issue](https://github.com/toki-plus/AB-Video-Deduplicator/issues) to start a discussion.
--   Fork the repository and submit a [Pull Request](https://github.com/toki-plus/AB-Video-Deduplicator/pulls).
+### Requirements
 
-If you find this project helpful, please consider giving it a ⭐!
+1. **Python**: 3.8+
+2. **FFmpeg**: Must be installed and on PATH
+   - macOS: `brew install ffmpeg`
+   - Windows: download from [gyan.dev](https://gyan.dev/ffmpeg/builds/)
+   - Linux: `sudo apt install ffmpeg`
+
+### Install & Run
+
+```bash
+git clone <repo-url>
+cd AB-Video-Deduplicator
+python -m venv venv
+source venv/bin/activate        # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+python src/main.py
+```
+
+### Usage
+
+1. Select Video A (content video)
+2. Select Video B (material video)
+3. Choose dedup level (60 / 120 / 240 fps)
+4. Optional: enable frame perturbation, TikTok-only, playback guard
+5. Choose output path, click "Start Processing"
+
+---
+
+## 📂 Project Structure
+
+```
+├── src/
+│   ├── main.py              # Entry point
+│   ├── video_processor.py   # Core processing thread
+│   ├── frame_perturb.py     # Frame perturbation (noise/color/micro-transform)
+│   ├── audio_perturb.py     # Audio perturbation (micro speed change)
+│   ├── tiktok_only.py       # TikTok mobile-only conversion
+│   ├── playback_guard.py    # Playback guard (HEVC optimization)
+│   ├── theme.py             # UI stylesheet
+│   ├── resources.qrc        # Qt resource file
+│   ├── resources.py         # Compiled resources
+│   └── ui/                  # PyQt5 UI components
+├── utils/
+│   ├── extract_frames.py    # Frame extraction utility
+│   └── gen_test_video.py    # Test video generator
+├── assets/                  # Icons & screenshots
+├── docs/
+│   └── screenshot.png       # Software screenshot
+├── requirements.txt
+└── LICENSE
+```
+
+---
 
 ## 📜 License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+MIT License
